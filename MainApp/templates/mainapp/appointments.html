@@ -1,0 +1,154 @@
+{% extends 'mainapp/base.html' %}
+
+{% block title %}Appointments — Campus SkillSwap{% endblock %}
+
+{% block content %}
+
+<div class="rounded-3 p-4 mb-4 text-white" style="background:linear-gradient(135deg,#0096c7,#4361ee);">
+    <h2 class="fw-bold mb-0">&#128197; Appointments</h2>
+    <p class="mb-0 text-white-75 small mt-1">Manage your received and sent booking requests</p>
+</div>
+
+<!-- Received bookings -->
+<h5 class="fw-bold mb-3" style="color:#4361ee;">&#128229; Received Requests</h5>
+{% if received %}
+    <div class="card shadow mb-5">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr style="background:linear-gradient(90deg,#0096c7,#4361ee);color:white;">
+                        <th class="py-3 ps-4">Skill</th>
+                        <th>From</th>
+                        <th>Date & Time</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in received %}
+                    <tr>
+                        <td class="ps-4">
+                            <a href="{% url 'skill-detail' appt.skill.pk %}" class="text-decoration-none fw-semibold">
+                                {{ appt.skill.title }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'user-profile' appt.requester.username %}" class="text-decoration-none">
+                                {{ appt.requester.username }}
+                            </a>
+                        </td>
+                        <td class="small">{{ appt.date|date:"M d, Y" }}<br><span class="text-muted">{{ appt.time|time:"g:i A" }}</span></td>
+                        <td class="small">
+                            {% if appt.message %}
+                                <span title="{{ appt.message }}" style="cursor:help;">{{ appt.message|truncatechars:40 }}</span>
+                            {% else %}<span class="text-muted">—</span>{% endif %}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if appt.status == 'pending' %}bg-warning text-dark
+                                {% elif appt.status == 'confirmed' %}bg-success
+                                {% elif appt.status == 'declined' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ appt.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if appt.status == 'pending' %}
+                                <form method="post" action="{% url 'appointment-action' appt.pk 'confirm' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success fw-semibold">&#10003; Accept</button>
+                                </form>
+                                <form method="post" action="{% url 'appointment-action' appt.pk 'decline' %}" class="d-inline ms-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger fw-semibold">&#10007; Reject</button>
+                                </form>
+                            {% elif appt.status == 'confirmed' %}
+                                <form method="post" action="{% url 'appointment-action' appt.pk 'cancel' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold">Cancel</button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="card shadow-sm mb-5 p-4 text-center text-muted">
+        <div style="font-size:2rem;">&#128230;</div>
+        <p class="mt-2 mb-0">No one has booked your skills yet.</p>
+    </div>
+{% endif %}
+
+<!-- Sent bookings -->
+<h5 class="fw-bold mb-3" style="color:#f72585;">&#128228; My Bookings</h5>
+{% if sent %}
+    <div class="card shadow">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr style="background:linear-gradient(90deg,#f72585,#7209b7);color:white;">
+                        <th class="py-3 ps-4">Skill</th>
+                        <th>Owner</th>
+                        <th>Date & Time</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appt in sent %}
+                    <tr>
+                        <td class="ps-4">
+                            <a href="{% url 'skill-detail' appt.skill.pk %}" class="text-decoration-none fw-semibold">
+                                {{ appt.skill.title }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'user-profile' appt.skill.owner.username %}" class="text-decoration-none">
+                                {{ appt.skill.owner.username }}
+                            </a>
+                        </td>
+                        <td class="small">{{ appt.date|date:"M d, Y" }}<br><span class="text-muted">{{ appt.time|time:"g:i A" }}</span></td>
+                        <td class="small">
+                            {% if appt.message %}
+                                <span title="{{ appt.message }}" style="cursor:help;">{{ appt.message|truncatechars:40 }}</span>
+                            {% else %}<span class="text-muted">—</span>{% endif %}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if appt.status == 'pending' %}bg-warning text-dark
+                                {% elif appt.status == 'confirmed' %}bg-success
+                                {% elif appt.status == 'declined' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ appt.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if appt.status == 'pending' or appt.status == 'confirmed' %}
+                                <form method="post" action="{% url 'appointment-action' appt.pk 'cancel' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold">Cancel</button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="card shadow-sm p-4 text-center text-muted">
+        <div style="font-size:2rem;">&#128203;</div>
+        <p class="mt-2 mb-0">You haven't booked any appointments yet.</p>
+    </div>
+{% endif %}
+{% endblock %}

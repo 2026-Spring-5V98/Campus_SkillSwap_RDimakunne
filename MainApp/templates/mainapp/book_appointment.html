@@ -1,0 +1,43 @@
+{% extends 'mainapp/base.html' %}
+
+{% block title %}Book Appointment — {{ skill.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-1">Book an Appointment</h4>
+                <p class="text-muted mb-4">
+                    Requesting <strong>{{ skill.title }}</strong> from
+                    <a href="{% url 'user-profile' skill.owner.username %}" class="text-decoration-none">
+                        {{ skill.owner.username }}
+                    </a>
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Date</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Time</label>
+                        {{ form.time }}
+                        {% if form.time.errors %}<div class="text-danger small mt-1">{{ form.time.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Message <span class="text-muted fw-normal">(optional)</span></label>
+                        {{ form.message }}
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Send Booking Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <a href="{% url 'skill-detail' skill.pk %}" class="btn btn-link mt-3 ps-0">&larr; Back to skill</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'mainapp/base.html' %}
+
+{% block title %}Dashboard — Campus SkillSwap{% endblock %}
+
+{% block content %}
+
+<!-- Header banner -->
+<div class="rounded-3 p-4 mb-4 text-white" style="background:linear-gradient(135deg,#4361ee,#7209b7);">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">&#128101; My Dashboard</h2>
+            <p class="mb-0 text-white-75">
+                Welcome back, <strong>{{ user.username }}</strong> &mdash;
+                you have <strong>{{ skills.count }}</strong> skill post{{ skills.count|pluralize }}.
+            </p>
+        </div>
+        <a href="{% url 'skill-create' %}" class="btn btn-light fw-semibold text-primary">
+            + Post a New Skill
+        </a>
+    </div>
+</div>
+
+{% if skills %}
+    <div class="card shadow">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr style="background:linear-gradient(90deg,#4361ee,#7209b7);color:white;">
+                        <th class="py-3 ps-4">Title</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Posted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for skill in skills %}
+                        <tr>
+                            <td class="ps-4">
+                                <a href="{% url 'skill-detail' skill.pk %}" class="text-decoration-none fw-semibold">
+                                    {{ skill.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge cat-{{ skill.category }}">
+                                    {% if skill.category == 'tech' %}&#128187;
+                                    {% elif skill.category == 'design' %}&#127912;
+                                    {% elif skill.category == 'writing' %}&#9997;
+                                    {% elif skill.category == 'music' %}&#127925;
+                                    {% elif skill.category == 'language' %}&#127760;
+                                    {% elif skill.category == 'math' %}&#128300;
+                                    {% elif skill.category == 'other' %}&#127381;
+                                    {% endif %}
+                                    {{ skill.get_category_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if skill.is_free %}
+                                    <span class="text-success fw-semibold">Free</span>
+                                {% else %}
+                                    ${{ skill.price }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if skill.availability_status == 'available' %}bg-success
+                                    {% elif skill.availability_status == 'busy' %}bg-warning text-dark
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ skill.get_availability_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-muted small">{{ skill.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'skill-update' skill.pk %}" class="btn btn-sm btn-warning fw-semibold">Edit</a>
+                                <a href="{% url 'skill-delete' skill.pk %}" class="btn btn-sm btn-danger fw-semibold ms-1">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <div style="font-size:3rem;">&#128218;</div>
+        <p class="fs-5 text-muted mt-2">You haven't posted any skills yet.</p>
+        <a href="{% url 'skill-create' %}" class="btn btn-primary fw-semibold px-4"
+           style="background:linear-gradient(90deg,#4361ee,#7209b7);border:none;">
+            Post Your First Skill
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

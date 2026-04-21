@@ -1,0 +1,136 @@
+{% extends 'mainapp/base.html' %}
+
+{% block title %}{{ profile_user.username }} — Campus SkillSwap{% endblock %}
+
+{% block content %}
+
+<!-- Profile header banner -->
+<div class="rounded-3 p-4 mb-4 text-white" style="background:linear-gradient(135deg,#f72585,#560bad,#4361ee);">
+    <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center"
+             style="width:64px;height:64px;font-size:2rem;">&#128100;</div>
+        <div>
+            <h3 class="fw-bold mb-0">{{ profile_user.username }}</h3>
+            {% if profile_user.get_full_name %}
+                <p class="text-white-75 mb-0">{{ profile_user.get_full_name }}</p>
+            {% endif %}
+            <div class="mt-1">
+                {% if avg_rating %}
+                    <span class="text-warning">
+                        {% for i in "12345" %}{% if forloop.counter <= avg_rating %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}
+                    </span>
+                    <span class="text-white-75 small ms-1">{{ avg_rating|floatformat:1 }}/5 &bull; {{ reviews.count }} review{{ reviews.count|pluralize }}</span>
+                {% else %}
+                    <span class="text-white-50 small">No reviews yet</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Left: review form -->
+    <div class="col-md-4">
+        {% if not is_own_profile %}
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3" style="color:#7209b7;">&#11088; Leave a Review</h6>
+                    {% if already_reviewed %}
+                        <p class="text-muted small mb-0">You have already reviewed this user.</p>
+                    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Rating</label>
+                                {{ form.rating }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Comment</label>
+                                {{ form.comment }}
+                                {% if form.comment.errors %}
+                                    <div class="text-danger small mt-1">{{ form.comment.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn fw-semibold text-white"
+                                        style="background:linear-gradient(90deg,#f72585,#7209b7);border:none;">
+                                    Submit Review
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Right: skills + reviews -->
+    <div class="col-md-8">
+
+        <h5 class="fw-bold mb-3 page-heading">Skills by {{ profile_user.username }}</h5>
+        {% if skills %}
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                {% for skill in skills %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm skill-card-{{ skill.category }}">
+                            <div class="card-body">
+                                <span class="badge float-end
+                                    {% if skill.availability_status == 'available' %}bg-success
+                                    {% elif skill.availability_status == 'busy' %}bg-warning text-dark
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ skill.get_availability_status_display }}
+                                </span>
+                                <span class="badge cat-{{ skill.category }} mb-1" style="font-size:0.7rem;">
+                                    {% if skill.category == 'tech' %}&#128187;
+                                    {% elif skill.category == 'design' %}&#127912;
+                                    {% elif skill.category == 'writing' %}&#9997;
+                                    {% elif skill.category == 'music' %}&#127925;
+                                    {% elif skill.category == 'language' %}&#127760;
+                                    {% elif skill.category == 'math' %}&#128300;
+                                    {% elif skill.category == 'other' %}&#127381;
+                                    {% endif %}
+                                    {{ skill.get_category_display }}
+                                </span>
+                                <h6 class="card-title mt-1 mb-1">{{ skill.title }}</h6>
+                                <p class="card-text small text-muted">{{ skill.description|truncatechars:80 }}</p>
+                            </div>
+                            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                                <span class="{% if skill.is_free %}text-success{% else %}text-dark{% endif %} fw-bold small">
+                                    {% if skill.is_free %}Free{% else %}${{ skill.price }}{% endif %}
+                                </span>
+                                <a href="{% url 'skill-detail' skill.pk %}" class="btn btn-sm text-white cat-{{ skill.category }}">View</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted mb-4">No skills posted yet.</p>
+        {% endif %}
+
+        <h5 class="fw-bold mb-3" style="color:#f72585;">&#11088; Reviews</h5>
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <a href="{% url 'user-profile' review.reviewer.username %}" class="fw-semibold text-decoration-none">
+                                {{ review.reviewer.username }}
+                            </a>
+                            <span class="text-warning">
+                                {% for i in "12345" %}{% if forloop.counter <= review.rating %}&#9733;{% else %}&#9734;{% endif %}{% endfor %}
+                                <span class="text-muted small ms-1">{{ review.rating }}/5</span>
+                            </span>
+                        </div>
+                        <p class="mb-1">{{ review.comment }}</p>
+                        <small class="text-muted">{{ review.created_at|date:"N j, Y" }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No reviews yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

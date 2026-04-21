@@ -1,0 +1,35 @@
+{% extends 'mainapp/base.html' %}
+
+{% block title %}Notifications — Campus SkillSwap{% endblock %}
+
+{% block content %}
+
+<div class="rounded-3 p-4 mb-4 text-white" style="background:linear-gradient(135deg,#560bad,#f72585);">
+    <h2 class="fw-bold mb-0">&#128276; Notifications</h2>
+    <p class="mb-0 text-white-75 small mt-1">Your latest activity updates</p>
+</div>
+
+{% if notifications %}
+    <div class="list-group shadow">
+        {% for notif in notifications %}
+            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-start py-3
+                        {% if not notif.is_read %}border-start border-4{% endif %}"
+                 {% if not notif.is_read %}style="border-left-color:#4361ee !important; background:#f0f4ff;"{% endif %}>
+                <div>
+                    <p class="mb-1 fw-semibold">{{ notif.message }}</p>
+                    <small class="text-muted">{{ notif.created_at|date:"N j, Y" }} at {{ notif.created_at|time:"g:i A" }}</small>
+                </div>
+                {% if not notif.is_read %}
+                    <span class="badge rounded-pill ms-3 align-self-center text-white"
+                          style="background:linear-gradient(135deg,#4361ee,#7209b7);">New</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <div style="font-size:3.5rem;">&#128276;</div>
+        <p class="fs-5 text-muted mt-2">No notifications yet.</p>
+    </div>
+{% endif %}
+{% endblock %}

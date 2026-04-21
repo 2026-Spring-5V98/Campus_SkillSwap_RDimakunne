@@ -1,0 +1,94 @@
+{% extends 'mainapp/base.html' %}
+
+{% block title %}{{ skill.title }} — Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <!-- Colored header band -->
+        <div class="card shadow overflow-hidden">
+            <div class="p-4 text-white
+                {% if skill.category == 'tech' %}cat-tech
+                {% elif skill.category == 'design' %}cat-design
+                {% elif skill.category == 'writing' %}cat-writing
+                {% elif skill.category == 'music' %}cat-music
+                {% elif skill.category == 'language' %}cat-language
+                {% elif skill.category == 'math' %}cat-math
+                {% else %}cat-other{% endif %}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="badge bg-white bg-opacity-25 mb-2">
+                            {% if skill.category == 'tech' %}&#128187;
+                            {% elif skill.category == 'design' %}&#127912;
+                            {% elif skill.category == 'writing' %}&#9997;
+                            {% elif skill.category == 'music' %}&#127925;
+                            {% elif skill.category == 'language' %}&#127760;
+                            {% elif skill.category == 'math' %}&#128300;
+                            {% elif skill.category == 'other' %}&#127381;
+                            {% endif %}
+                            {{ skill.get_category_display }}
+                        </span>
+                        <h2 class="fw-bold mb-0">{{ skill.title }}</h2>
+                    </div>
+                    <span class="badge fs-6
+                        {% if skill.availability_status == 'available' %}bg-success
+                        {% elif skill.availability_status == 'busy' %}bg-warning text-dark
+                        {% else %}bg-secondary{% endif %}">
+                        {{ skill.get_availability_status_display }}
+                    </span>
+                </div>
+                <p class="mb-0 mt-2 text-white-75">
+                    Posted by <strong>
+                        <a href="{% url 'user-profile' skill.owner.username %}" class="text-white">
+                            {{ skill.owner.username }}
+                        </a>
+                    </strong>
+                    &bull; {{ skill.created_at|date:"N j, Y" }}
+                </p>
+            </div>
+
+            <div class="card-body p-4">
+                <p class="fs-6">{{ skill.description }}</p>
+                <hr>
+                <div class="row mt-3">
+                    <div class="col-sm-6 mb-2">
+                        <span class="text-muted">Price:</span>
+                        {% if skill.is_free %}
+                            <span class="text-success fw-bold ms-1">&#127381; Free</span>
+                        {% else %}
+                            <span class="fw-bold ms-1">${{ skill.price }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <span class="text-muted">Contact via:</span>
+                        <span class="ms-1 fw-semibold">{{ skill.get_contact_preference_display }}</span>
+                    </div>
+                </div>
+
+                {% if user == skill.owner %}
+                    <div class="mt-4 d-flex gap-2">
+                        <a href="{% url 'skill-update' skill.pk %}" class="btn btn-warning fw-semibold">&#9998; Edit</a>
+                        <a href="{% url 'skill-delete' skill.pk %}" class="btn btn-danger fw-semibold">&#128465; Delete</a>
+                    </div>
+                {% elif user.is_authenticated %}
+                    <div class="mt-4">
+                        <a href="{% url 'book-appointment' skill.pk %}" class="btn text-white fw-semibold
+                            {% if skill.category == 'tech' %}cat-tech
+                            {% elif skill.category == 'design' %}cat-design
+                            {% elif skill.category == 'writing' %}cat-writing
+                            {% elif skill.category == 'music' %}cat-music
+                            {% elif skill.category == 'language' %}cat-language
+                            {% elif skill.category == 'math' %}cat-math
+                            {% else %}cat-other{% endif %}">
+                            &#128197; Book Appointment
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <a href="{% url 'skill-list' %}" class="btn btn-link mt-3 ps-0">&larr; Back to all skills</a>
+    </div>
+</div>
+{% endblock %}

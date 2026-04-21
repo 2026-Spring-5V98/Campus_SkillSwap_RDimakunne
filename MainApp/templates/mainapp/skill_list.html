@@ -1,0 +1,123 @@
+{% extends 'mainapp/base.html' %}
+
+{% block title %}Browse Skills — Campus SkillSwap{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold page-heading mb-0">Browse Skills</h2>
+    {% if user.is_authenticated %}
+        <a href="{% url 'skill-create' %}" class="btn btn-primary fw-semibold"
+           style="background:linear-gradient(90deg,#4361ee,#7209b7);border:none;">
+            + Post a Skill
+        </a>
+    {% endif %}
+</div>
+
+<!-- Category filter pills -->
+<div class="mb-4">
+    <p class="fw-semibold mb-2 text-muted small text-uppercase" style="letter-spacing:1px;">Filter by Category</p>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'skill-list' %}"
+           class="btn btn-sm fw-semibold {% if not selected_category %}text-white{% else %}btn-outline-secondary{% endif %}"
+           {% if not selected_category %}style="background:linear-gradient(90deg,#4361ee,#7209b7);border:none;"{% endif %}>
+            &#127775; All
+        </a>
+        {% for value, label in categories %}
+            <a href="?category={{ value }}"
+               class="btn btn-sm fw-semibold {% if selected_category == value %}text-white{% else %}btn-outline-secondary{% endif %}"
+               {% if selected_category == value %}
+               style="background:
+                   {% if value == 'tech' %}linear-gradient(135deg,#4361ee,#3f86ff)
+                   {% elif value == 'design' %}linear-gradient(135deg,#f72585,#ff6db6)
+                   {% elif value == 'writing' %}linear-gradient(135deg,#7209b7,#b14ae0)
+                   {% elif value == 'music' %}linear-gradient(135deg,#560bad,#8338ec)
+                   {% elif value == 'language' %}linear-gradient(135deg,#0096c7,#00b4d8)
+                   {% elif value == 'math' %}linear-gradient(135deg,#2dc653,#52e06b)
+                   {% elif value == 'other' %}linear-gradient(135deg,#f77f00,#ffb347)
+                   {% endif %};border:none;"
+               {% endif %}>
+                {% if value == 'tech' %}&#128187;
+                {% elif value == 'design' %}&#127912;
+                {% elif value == 'writing' %}&#9997;
+                {% elif value == 'music' %}&#127925;
+                {% elif value == 'language' %}&#127760;
+                {% elif value == 'math' %}&#128300;
+                {% elif value == 'other' %}&#127381;
+                {% endif %}
+                {{ label }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+{% if skills %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for skill in skills %}
+            <div class="col">
+                <div class="card h-100 shadow-sm skill-card-{{ skill.category }}">
+                    <div class="card-body">
+                        <span class="badge float-end
+                            {% if skill.availability_status == 'available' %}bg-success
+                            {% elif skill.availability_status == 'busy' %}bg-warning text-dark
+                            {% else %}bg-secondary{% endif %}">
+                            {{ skill.get_availability_status_display }}
+                        </span>
+
+                        <!-- Category label with color -->
+                        <span class="badge mb-2
+                            cat-{{ skill.category }}"
+                            style="font-size:0.7rem;">
+                            {% if skill.category == 'tech' %}&#128187;
+                            {% elif skill.category == 'design' %}&#127912;
+                            {% elif skill.category == 'writing' %}&#9997;
+                            {% elif skill.category == 'music' %}&#127925;
+                            {% elif skill.category == 'language' %}&#127760;
+                            {% elif skill.category == 'math' %}&#128300;
+                            {% elif skill.category == 'other' %}&#127381;
+                            {% endif %}
+                            {{ skill.get_category_display }}
+                        </span>
+
+                        <h5 class="card-title mt-1">{{ skill.title }}</h5>
+                        <p class="text-muted small mb-2">
+                            by <strong>
+                                <a href="{% url 'user-profile' skill.owner.username %}" class="text-decoration-none">
+                                    {{ skill.owner.username }}
+                                </a>
+                            </strong>
+                        </p>
+                        <p class="card-text">{{ skill.description|truncatechars:100 }}</p>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-6
+                            {% if skill.is_free %}text-success{% else %}text-dark{% endif %}">
+                            {% if skill.is_free %}&#127381; Free{% else %}${{ skill.price }}{% endif %}
+                        </span>
+                        <a href="{% url 'skill-detail' skill.pk %}" class="btn btn-sm text-white"
+                           style="background:
+                               {% if skill.category == 'tech' %}linear-gradient(135deg,#4361ee,#3f86ff)
+                               {% elif skill.category == 'design' %}linear-gradient(135deg,#f72585,#ff6db6)
+                               {% elif skill.category == 'writing' %}linear-gradient(135deg,#7209b7,#b14ae0)
+                               {% elif skill.category == 'music' %}linear-gradient(135deg,#560bad,#8338ec)
+                               {% elif skill.category == 'language' %}linear-gradient(135deg,#0096c7,#00b4d8)
+                               {% elif skill.category == 'math' %}linear-gradient(135deg,#2dc653,#52e06b)
+                               {% else %}linear-gradient(135deg,#f77f00,#ffb347){% endif %};border:none;">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5 text-muted">
+        <div style="font-size:3rem;">&#128269;</div>
+        <p class="fs-5 mt-2">No skills posted yet.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'skill-create' %}" class="btn btn-primary">Be the first to post!</a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-primary">Sign up to post a skill</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
