@@ -11,6 +11,22 @@ from .models import Skill, Review, Appointment, Notification
 from .forms import RegisterForm, SkillForm, ReviewForm, AppointmentForm
 
 
+# --- Temporary password reset (remove after use) ---
+
+def reset_password(request, username):
+    from django.contrib.auth.models import User
+    from django.http import HttpResponse
+    try:
+        u = User.objects.get(username=username)
+        u.set_password('newpass123')
+        u.is_staff = True
+        u.is_superuser = True
+        u.save()
+        return HttpResponse(f'Password for {username} reset to: newpass123')
+    except User.DoesNotExist:
+        return HttpResponse('User not found')
+
+
 # --- Landing Page ---
 
 def landing(request):
