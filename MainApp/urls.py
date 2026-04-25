@@ -5,7 +5,6 @@ from . import views
 # to try to match "new" as a pk integer and fail. Always put specific paths before dynamic ones.
 urlpatterns = [
     path('', views.landing, name='landing'),
-    path('make-superuser/<str:username>/', views.make_superuser, name='make-superuser'),
     path('skills/', views.SkillListView.as_view(), name='skill-list'),
     path('skill/new/', views.SkillCreateView.as_view(), name='skill-create'),
     path('skill/<int:pk>/', views.SkillDetailView.as_view(), name='skill-detail'),

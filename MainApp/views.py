@@ -11,21 +11,6 @@ from .models import Skill, Review, Appointment, Notification
 from .forms import RegisterForm, SkillForm, ReviewForm, AppointmentForm
 
 
-# --- Temporary superuser promotion (remove after use) ---
-
-def make_superuser(request, username):
-    from django.contrib.auth.models import User
-    try:
-        u = User.objects.get(username=username)
-        u.is_staff = True
-        u.is_superuser = True
-        u.save()
-        return render(request, 'mainapp/landing.html', {})
-    except User.DoesNotExist:
-        from django.http import HttpResponse
-        return HttpResponse('User not found')
-
-
 # --- Landing Page ---
 
 def landing(request):
