@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,7 +16,32 @@
             --color-other:    #f77f00;
         }
 
-        body { background-color: #f0f2f5; }
+        body { background-color: #0f1117; color: #e0e0e0; }
+
+        /* Dark card & form surfaces */
+        .card { background-color: #1a1d2e !important; }
+        .card-footer { background-color: #1a1d2e !important; border-top: 1px solid #2e3150 !important; }
+        .table { --bs-table-bg: #1a1d2e; --bs-table-hover-bg: #22263a; color: #e0e0e0; }
+        .table thead tr { color: #fff !important; }
+        .form-control, .form-select {
+            background-color: #12151f !important;
+            border-color: #2e3150 !important;
+            color: #e0e0e0 !important;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #12151f !important;
+            border-color: #4361ee !important;
+            color: #e0e0e0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(67,97,238,0.25) !important;
+        }
+        .list-group-item {
+            background-color: #1a1d2e !important;
+            border-color: #2e3150 !important;
+            color: #e0e0e0 !important;
+        }
+        .btn-outline-secondary { border-color: #4a4f6a; color: #b0b3c8; }
+        .btn-outline-secondary:hover { background-color: #2e3150; color: #fff; }
+        .text-muted { color: #7a7f9a !important; }
 
         /* Navbar */
         .navbar {
