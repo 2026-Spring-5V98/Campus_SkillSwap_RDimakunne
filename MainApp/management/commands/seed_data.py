@@ -1,6 +1,7 @@
+import datetime
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from MainApp.models import Skill
+from MainApp.models import Skill, Appointment, Review, Notification
 
 
 USERS = [
@@ -164,14 +165,39 @@ SKILLS = [
     },
 ]
 
+# (requester_username, skill_title, date, time, message, status)
+APPOINTMENTS = [
+    ('brian_arts', 'Python Programming for Beginners', '2026-05-02', '10:00', 'Hi Alice! I want to start learning Python. Is morning okay?', 'confirmed'),
+    ('chloe_music', 'Web Development with Django', '2026-05-05', '14:00', 'I want to build a portfolio site. Can we start next week?', 'pending'),
+    ('eva_math', 'Logo & Brand Identity Design', '2026-05-03', '11:00', 'Need a logo for my math tutoring service. Is $20 the final price?', 'confirmed'),
+    ('alice_dev', 'Guitar Lessons (Beginner)', '2026-05-07', '09:00', 'Always wanted to learn guitar. Available on Saturday mornings.', 'confirmed'),
+    ('david_lang', 'Calculus Tutoring', '2026-05-04', '16:00', 'Struggling with integration by parts. Can we meet Wednesday?', 'confirmed'),
+    ('brian_arts', 'French Conversation Practice', '2026-05-06', '13:00', 'Je veux pratiquer mon français! Available Tuesday afternoons.', 'pending'),
+    ('chloe_music', 'CV & Cover Letter Writing', '2026-05-08', '15:00', 'Applying for internships and need help with my CV urgently.', 'confirmed'),
+    ('eva_math', 'Guitar Lessons (Beginner)', '2026-05-10', '10:00', 'Can we do a trial session first before committing?', 'declined'),
+    ('alice_dev', 'Statistics & Data Analysis Help', '2026-05-09', '11:00', 'I have an assignment due Friday. Can we meet before then?', 'cancelled'),
+    ('david_lang', 'Poster & Flyer Design', '2026-05-11', '14:00', 'Need a flyer for a campus event happening next weekend.', 'confirmed'),
+]
+
+# (reviewer_username, reviewee_username, rating, comment)
+REVIEWS = [
+    ('brian_arts', 'alice_dev', 5, 'Alice explained Python so clearly! I built my first script after just two sessions. Highly recommend.'),
+    ('eva_math', 'brian_arts', 4, 'Brian did a great job on my logo. Clean design, fast delivery. Would use again.'),
+    ('alice_dev', 'chloe_music', 5, 'Chloe is an amazing teacher. Patient and fun. I can already play two songs after 3 lessons!'),
+    ('david_lang', 'eva_math', 5, 'Eva broke down calculus in a way no lecturer ever did. Passed my exam because of her!'),
+    ('chloe_music', 'david_lang', 4, 'David is so passionate about languages. My French accent has improved a lot. Merci!'),
+    ('eva_math', 'alice_dev', 5, 'Alice helped me write the best CV I have ever had. Got two interview callbacks the same week!'),
+    ('alice_dev', 'eva_math', 4, 'Really helpful stats session. Eva knows her stuff and explains things with real examples.'),
+]
+
 
 class Command(BaseCommand):
-    help = 'Seeds the database with sample users and skill listings'
+    help = 'Seeds the database with sample users, skills, appointments, and reviews'
 
     def handle(self, *args, **kwargs):
+        # --- Users ---
         self.stdout.write('Seeding users...')
         user_map = {}
-
         for data in USERS:
             user, created = User.objects.get_or_create(
                 username=data['username'],
@@ -189,7 +215,9 @@ class Command(BaseCommand):
                 self.stdout.write(f'  Skipped (exists): {user.username}')
             user_map[data['username']] = user
 
+        # --- Skills ---
         self.stdout.write('Seeding skills...')
+        skill_map = {}
         for data in SKILLS:
             owner = user_map[data['owner_username']]
             skill, created = Skill.objects.get_or_create(
@@ -208,5 +236,47 @@ class Command(BaseCommand):
                 self.stdout.write(f'  Created skill: {skill.title}')
             else:
                 self.stdout.write(f'  Skipped (exists): {skill.title}')
+            skill_map[data['title']] = skill
+
+        # --- Appointments ---
+        self.stdout.write('Seeding appointments...')
+        for data in APPOINTMENTS:
+            requester = user_map[data[0]]
+            skill = skill_map.get(data[1])
+            if not skill:
+                self.stdout.write(f'  Skipped appointment — skill not found: {data[1]}')
+                continue
+            if skill.owner == requester:
+                continue
+            exists = Appointment.objects.filter(requester=requester, skill=skill).exists()
+            if not exists:
+                appt = Appointment.objects.create(
+                    requester=requester,
+                    skill=skill,
+                    date=datetime.date.fromisoformat(data[2]),
+                    time=datetime.time.fromisoformat(data[3]),
+                    message=data[4],
+                    status=data[5],
+                )
+                self.stdout.write(f'  Created appointment: {requester.username} → {skill.title} [{appt.status}]')
+            else:
+                self.stdout.write(f'  Skipped (exists): {requester.username} → {skill.title}')
+
+        # --- Reviews ---
+        self.stdout.write('Seeding reviews...')
+        for reviewer_name, reviewee_name, rating, comment in REVIEWS:
+            reviewer = user_map[reviewer_name]
+            reviewee = user_map[reviewee_name]
+            exists = Review.objects.filter(reviewer=reviewer, reviewee=reviewee).exists()
+            if not exists:
+                Review.objects.create(
+                    reviewer=reviewer,
+                    reviewee=reviewee,
+                    rating=rating,
+                    comment=comment,
+                )
+                self.stdout.write(f'  Created review: {reviewer_name} → {reviewee_name} ({rating}★)')
+            else:
+                self.stdout.write(f'  Skipped (exists): {reviewer_name} → {reviewee_name}')
 
         self.stdout.write(self.style.SUCCESS('Done! Database seeded successfully.'))
